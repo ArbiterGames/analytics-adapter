@@ -21,6 +21,16 @@ SECRET_KEY = '2#13x0*9i=l*w6xz%%i6hn%hr1kma*3gb3-yzl4p+ei_e4#ads'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+IS_DEV = os.environ['ENVIRONMENT'] == 'dev'
+IS_STAGING = os.environ['ENVIRONMENT'] == 'staging'
+IS_PRODUCTION = os.environ['ENVIRONMENT'] == 'production'
+
+if IS_DEV:
+    DATABASE_URL = 'postgres://postgres@localhost/analyticsadapter'
+
+if IS_PRODUCTION:
+    DEBUG = False
+    DATABASE_URL = os.environ['DATABASE_URL']
 
 TEMPLATE_DEBUG = True
 
@@ -36,6 +46,10 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'adapter',
+    'input',
+    'output'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -55,13 +69,18 @@ WSGI_APPLICATION = 'adapter.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
+import dj_database_url
 DATABASES = {
+    'default': dj_database_url.config(default=DATABASE_URL)
+}
+
+TEST_DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': 'test.db',
     }
 }
+SOUTH_TESTS_MIGRATE = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -81,11 +100,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
-
-
-# Parse database configuration from $DATABASE_URL
-import dj_database_url
-DATABASES['default'] = dj_database_url.config()
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
