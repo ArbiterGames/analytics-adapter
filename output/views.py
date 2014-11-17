@@ -18,29 +18,34 @@ END_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 8)
 
 def geckoboard_dau(request):
     response = {'item': []}
-
     last_week = Record.objects.filter(date__range=(BEGINNING_OF_LAST_WEEK, END_OF_LAST_WEEK))
     last_week_mean = calculate_mean_dau_from_qs(qs=last_week)
     response['item'].append({'value': '{0:.2f}'.format(last_week_mean)})
-
     week_before_last = Record.objects.filter(date__range=(BEGINNING_OF_WEEK_BEFORE_LAST, END_OF_WEEK_BEFORE_LAST))
     week_before_last_mean = calculate_mean_dau_from_qs(qs=week_before_last)
     response['item'].append({'value': '{0:.2f}'.format(week_before_last_mean)})
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
+
+def geckoboard_revenue(request):
+    response = {'item': []}
+    last_week = Record.objects.filter(date__range=(BEGINNING_OF_LAST_WEEK, END_OF_LAST_WEEK))
+    last_week_mean = calculate_mean_revenue_from_qs(qs=last_week)
+    response['item'].append({'value': '{0:.2f}'.format(last_week_mean)})
+    week_before_last = Record.objects.filter(date__range=(BEGINNING_OF_WEEK_BEFORE_LAST, END_OF_WEEK_BEFORE_LAST))
+    week_before_last_mean = calculate_mean_revenue_from_qs(qs=week_before_last)
+    response['item'].append({'value': '{0:.2f}'.format(week_before_last_mean)})
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 def geckoboard_arpu(request):
     response = {'item': []}
-
     last_week = Record.objects.filter(date__range=(BEGINNING_OF_LAST_WEEK, END_OF_LAST_WEEK))
     last_week_mean = calculate_mean_arpu_from_qs(qs=last_week)
     response['item'].append({'value': '{0:.2f}'.format(last_week_mean)})
-
     week_before_last = Record.objects.filter(date__range=(BEGINNING_OF_WEEK_BEFORE_LAST, END_OF_WEEK_BEFORE_LAST))
     week_before_last_mean = calculate_mean_arpu_from_qs(qs=week_before_last)
     response['item'].append({'value': '{0:.2f}'.format(week_before_last_mean)})
-
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
