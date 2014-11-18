@@ -53,10 +53,10 @@ def geckoboard_pool_impact(request):
     response = {'item': []}
     last_week = Record.objects.filter(date__range=(BEGINNING_OF_LAST_WEEK, END_OF_LAST_WEEK))
     last_week_mean = calculate_total_pool_impact_from_qs(qs=last_week)
-    response['item'].append({'value': '{0:.2f}'.format(last_week_mean)})
+    response['item'].append({'value': '{0:.2f}'.format(last_week_mean / 100)})
     week_before_last = Record.objects.filter(date__range=(BEGINNING_OF_WEEK_BEFORE_LAST, END_OF_WEEK_BEFORE_LAST))
     week_before_last_mean = calculate_total_pool_impact_from_qs(qs=week_before_last)
-    response['item'].append({'value': '{0:.2f}'.format(week_before_last_mean)})
+    response['item'].append({'value': '{0:.2f}'.format(week_before_last_mean / 100)})
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
