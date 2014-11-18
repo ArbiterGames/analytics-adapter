@@ -49,6 +49,17 @@ def geckoboard_arpu(request):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
+def geckoboard_pool_impact(request):
+    response = {'item': []}
+    last_week = Record.objects.filter(date__range=(BEGINNING_OF_LAST_WEEK, END_OF_LAST_WEEK))
+    last_week_mean = calculate_total_pool_impact_from_qs(qs=last_week)
+    response['item'].append({'value': '{0:.2f}'.format(last_week_mean)})
+    week_before_last = Record.objects.filter(date__range=(BEGINNING_OF_WEEK_BEFORE_LAST, END_OF_WEEK_BEFORE_LAST))
+    week_before_last_mean = calculate_total_pool_impact_from_qs(qs=week_before_last)
+    response['item'].append({'value': '{0:.2f}'.format(week_before_last_mean)})
+    return HttpResponse(json.dumps(response), content_type="application/json")
+
+
 def calculate_mean_dau_from_qs(qs=None):
     try:
         total_dau = sum(Decimal(r.dau) for r in qs.iterator())
@@ -64,6 +75,14 @@ def calculate_mean_revenue_from_qs(qs=None):
         return total_revenue / DAYS_IN_A_WEEK
     except Exception as err:
         logger.debug('calculate_mean_revenue_from_qs error: %s' % err)
+        return Decimal('0')
+
+
+def calculate_total_pool_impact_from_qs(qs=None):
+    try:
+        return sum(Decimal(r.prize_pool_impact) for r in qs.iterator())
+    except Exception as err:
+        logger.debug('calculate_total_pool_impact_from_qs error: %s' % err)
         return Decimal('0')
 
 

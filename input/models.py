@@ -4,8 +4,9 @@ from django.db import models
 
 class Record(models.Model):
     date = models.DateField()
-    revenue = models.CharField(max_length=100)
-    dau = models.CharField(max_length=100)
+    revenue = models.CharField(max_length=100, default='0')
+    dau = models.CharField(max_length=100, default='0', verbose_name='DAU')
+    prize_pool_impact = models.CharField(max_length=100, default='0')
 
     @property
     def arpu(self):

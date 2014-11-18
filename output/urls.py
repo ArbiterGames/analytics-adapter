@@ -4,4 +4,5 @@ urlpatterns = patterns('',
     url(r'^geckoboard/arpu', 'output.views.geckoboard_arpu', name='geckoboard_arpu'),
     url(r'^geckoboard/dau', 'output.views.geckoboard_dau', name='geckoboard_dau'),
     url(r'^geckoboard/revenue', 'output.views.geckoboard_revenue', name='geckoboard_revenue'),
+    url(r'^geckoboard/pool-impact', 'output.views.geckoboard_pool_impact', name='geckoboard_pool_impact'),
 )

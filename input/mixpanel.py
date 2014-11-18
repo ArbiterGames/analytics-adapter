@@ -17,8 +17,10 @@ TODAY = datetime.today()
 A_WEEK = 7
 A_DAY = 1
 A_WEEK_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 7)
+A_MONTH_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month - 1, TODAY.day)
 YESTERDAY = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 1)
 TWO_DAYS_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 2)
+THREE_DAYS_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 3)
 EXPIRE = int(time.time()) + 600
 
 
@@ -30,9 +32,56 @@ class Scraper(object):
         logger.debug('record: %s' % record)
         record.dau = self.get_dau()
         record.revenue = self.get_revenue()
+        record.prize_pool_impact = self.get_prize_pool_impact()
         record.save()
-        self.get_revenue()
         super(Scraper, self).__init__()
+
+    def get_dau(self):
+        DAU_EVENT = 'Loaded Game'
+        params = {
+            'api_key': API_KEY,
+            'expire': EXPIRE,
+            'interval': A_DAY,
+            'type': 'unique',
+            'unit': 'day',
+            'event': [DAU_EVENT]
+        }
+        params['sig'] = self.hash_args(params)
+        url = '/'.join([ENDPOINT, str(VERSION)]) + '/events/?' + self.unicode_urlencode(params)
+        r = requests.get(url)
+        return r.json()['data']['values'][DAU_EVENT][YESTERDAY]
+
+    def get_revenue(self):
+        REVENUE_EVENT = 'Revenue Collected'
+        params = {
+            'api_key': API_KEY,
+            'expire': EXPIRE,
+            'event': REVENUE_EVENT,
+            'from_date': YESTERDAY,
+            'to_date': YESTERDAY,
+            'on': 'number(properties["amount"])',
+            'limit': 1000
+        }
+        params['sig'] = self.hash_args(params)
+        url = '/'.join([ENDPOINT, str(VERSION)]) + '/segmentation/sum?' + self.unicode_urlencode(params)
+        r = requests.get(url)
+        return r.json()['results'][YESTERDAY]
+
+    def get_prize_pool_impact(self):
+        EVENT = 'Score Challenge Closed'
+        params = {
+            'api_key': API_KEY,
+            'expire': EXPIRE,
+            'event': EVENT,
+            'from_date': YESTERDAY,
+            'to_date': YESTERDAY,
+            'on': 'number(properties["prize pool impact"])',
+            'limit': 1000
+        }
+        params['sig'] = self.hash_args(params)
+        url = '/'.join([ENDPOINT, str(VERSION)]) + '/segmentation/sum?' + self.unicode_urlencode(params)
+        r = requests.get(url)
+        return r.json()['results'][YESTERDAY]
 
     def unicode_urlencode(self, params):
         """ Convert lists to JSON encoded strings, and correctly handle any
@@ -71,34 +120,3 @@ class Scraper(object):
         elif API_SECRET:
             hash.update(API_SECRET)
         return hash.hexdigest()
-
-    def get_dau(self):
-        DAU_EVENT = 'Loaded Game'
-        params = {
-            'api_key': API_KEY,
-            'expire': EXPIRE,
-            'interval': A_DAY,
-            'type': 'unique',
-            'unit': 'day',
-            'event': [DAU_EVENT]
-        }
-        params['sig'] = self.hash_args(params)
-        url = '/'.join([ENDPOINT, str(VERSION)]) + '/events/?' + self.unicode_urlencode(params)
-        r = requests.get(url)
-        return r.json()['data']['values'][DAU_EVENT][YESTERDAY]
-
-    def get_revenue(self):
-        REVENUE_EVENT = 'Revenue Collected'
-        params = {
-            'api_key': API_KEY,
-            'expire': EXPIRE,
-            'event': REVENUE_EVENT,
-            'from_date': YESTERDAY,
-            'to_date': YESTERDAY,
-            'on': 'number(properties["amount"])',
-            'limit': 1000
-        }
-        params['sig'] = self.hash_args(params)
-        url = '/'.join([ENDPOINT, str(VERSION)]) + '/segmentation/sum?' + self.unicode_urlencode(params)
-        r = requests.get(url)
-        return r.json()['results'][YESTERDAY]
