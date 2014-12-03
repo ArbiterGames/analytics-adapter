@@ -10,14 +10,10 @@ logger = Logger()
 
 DAYS_IN_A_WEEK = 7
 TODAY = datetime.datetime.today()
-START_LW = TODAY - datetime.timedelta(days=7)
-END_LW = TODAY - datetime.timedelta(days=1)
-START_WBL = TODAY - datetime.timedelta(days=14)
-END_WBL = TODAY - datetime.timedelta(days=18)
-BEGINNING_OF_LAST_WEEK = '%s-%s-%s' % (START_LW.year, START_LW.month, START_LW.day)
-END_OF_LAST_WEEK = '%s-%s-%s' % (END_LW.year, END_LW.month, END_LW.day)
-BEGINNING_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (START_WBL.year, START_WBL.month, START_WBL.day)
-END_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (END_WBL.year, END_WBL.month, END_WBL.day)
+BEGINNING_OF_LAST_WEEK = (TODAY - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+END_OF_LAST_WEEK = (TODAY - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+BEGINNING_OF_WEEK_BEFORE_LAST = (TODAY - datetime.timedelta(days=14)).strftime('%Y-%m-%d')
+END_OF_WEEK_BEFORE_LAST = (TODAY - datetime.timedelta(days=18)).strftime('%Y-%m-%d')
 
 
 def geckoboard_dau(request):

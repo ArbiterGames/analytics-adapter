@@ -3,8 +3,8 @@ import time
 import json
 import hashlib
 import urllib
+import datetime
 
-from datetime import datetime
 from adapter.utils import Logger
 from input.models import Record
 logger = Logger()
@@ -13,14 +13,13 @@ API_KEY = 'fcc50d5150c1b242626ea3d3515ad4d7'
 API_SECRET = '20ba853fc59a22d82eefc741279fa378'
 ENDPOINT = 'http://mixpanel.com/api'
 VERSION = '2.0'
-TODAY = datetime.today()
-A_WEEK = 7
 A_DAY = 1
-A_WEEK_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 7)
-A_MONTH_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month - 1, TODAY.day)
-YESTERDAY = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 1)
-TWO_DAYS_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 2)
-THREE_DAYS_AGO = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 3)
+TODAY = datetime.datetime.today()
+YESTERDAY = (TODAY - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+TWO_DAYS_AGO = (TODAY - datetime.timedelta(days=2)).strftime('%Y-%m-%d')
+THREE_DAYS_AGO = (TODAY - datetime.timedelta(days=3)).strftime('%Y-%m-%d')
+WEEK_AGO = (TODAY - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+MONTH_AGO = (TODAY - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
 EXPIRE = int(time.time()) + 600
 
 
