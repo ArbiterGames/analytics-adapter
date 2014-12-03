@@ -1,6 +1,6 @@
 import json
+import datetime
 from decimal import Decimal
-from datetime import datetime
 
 from django.http import HttpResponse
 
@@ -9,11 +9,15 @@ from adapter.utils import Logger
 logger = Logger()
 
 DAYS_IN_A_WEEK = 7
-TODAY = datetime.today()
-BEGINNING_OF_LAST_WEEK = '%s-%s-%s' % (TODAY.year, TODAY.month - 1, TODAY.day - 7)
-END_OF_LAST_WEEK = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 1)
-BEGINNING_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 14)
-END_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (TODAY.year, TODAY.month, TODAY.day - 8)
+TODAY = datetime.datetime.today()
+START_LW = TODAY - datetime.timedelta(days=7)
+END_LW = TODAY - datetime.timedelta(days=1)
+START_WBL = TODAY - datetime.timedelta(days=14)
+END_WBL = TODAY - datetime.timedelta(days=18)
+BEGINNING_OF_LAST_WEEK = '%s-%s-%s' % (START_LW.year, START_LW.month, START_LW.day)
+END_OF_LAST_WEEK = '%s-%s-%s' % (END_LW.year, END_LW.month, END_LW.day)
+BEGINNING_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (START_WBL.year, START_WBL.month, START_WBL.day)
+END_OF_WEEK_BEFORE_LAST = '%s-%s-%s' % (END_WBL.year, END_WBL.month, END_WBL.day)
 
 
 def geckoboard_dau(request):
