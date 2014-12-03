@@ -71,6 +71,63 @@ def geckoboard_pool_impact(request):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
+def geckoboard_algorithm_arpu(request):
+    response = {
+        "chart": {
+            "style": {
+                "color": "#b9bbbb"
+            },
+            "renderTo": "container",
+            "backgroundColor": "transparent",
+            "lineColor": "rgba(35,37,38,100)",
+            "plotShadow": False
+        },
+        "credits": {
+            "enabled": False
+        },
+        "title": {
+            "style": {
+                "color": "#b9bbbb"
+            },
+            "text": "Monthly Average Temperature"
+        },
+        "xAxis": {
+            "categories": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        },
+        "yAxis": {
+            "title": {
+                "style": {
+                    "color": "#b9bbbb"
+                },
+                "text": "Temperature"
+            }
+        },
+        "legend": {
+            "itemStyle": {
+                "color": "#b9bbbb"
+            },
+            "layout": "vertical",
+            "align": "right",
+            "verticalAlign": "middle",
+            "borderWidth": 0
+        },
+        "series": [{
+                "color": "#108ec5",
+                "name": "NewYork",
+                "data": [17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5]
+            }, {
+                "color": "#52b238",
+                "name": "Berlin",
+                "data": [13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0]
+            }, {
+                "color": "#ee5728",
+                "name": "London",
+                "data": [11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+        }]
+    }
+    return HttpResponse(json.dumps(response), content_type="application/json")
+
+
 def calculate_mean_dau_from_qs(qs=None):
     try:
         total_dau = sum(Decimal(r.dau) for r in qs.iterator())
