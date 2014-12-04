@@ -5,12 +5,15 @@ import hashlib
 import urllib
 import datetime
 
-from adapter.utils import Logger
 from input.models import Record
+from input.models import AlgorithmRecord
+
+from adapter.utils import Logger
 logger = Logger()
 
 API_KEY = 'fcc50d5150c1b242626ea3d3515ad4d7'
 API_SECRET = '20ba853fc59a22d82eefc741279fa378'
+
 ENDPOINT = 'http://mixpanel.com/api'
 VERSION = '2.0'
 A_DAY = 1
@@ -27,12 +30,11 @@ class Scraper(object):
 
     def __init__(self):
         record, created = Record.objects.get_or_create(date=YESTERDAY)
-        logger.debug('created: %s' % created)
-        logger.debug('record: %s' % record)
         record.dau = self.get_dau()
         record.revenue = self.get_revenue()
         record.prize_pool_impact = self.get_prize_pool_impact()
         record.save()
+        self.get_algorithm_arpu(record=record)
         super(Scraper, self).__init__()
 
     def get_dau(self):
@@ -81,6 +83,44 @@ class Scraper(object):
         url = '/'.join([ENDPOINT, str(VERSION)]) + '/segmentation/sum?' + self.unicode_urlencode(params)
         r = requests.get(url)
         return r.json()['results'][YESTERDAY]
+
+    def get_algorithm_arpu(self, record=None):
+        EVENT = 'Score Challenge Score Reported'
+        for version in self.get_algorithm_versions():
+            params = {
+                'api_key': API_KEY,
+                'expire': EXPIRE,
+                'event': EVENT,
+                'from_date': YESTERDAY,
+                'to_date': YESTERDAY,
+                'on': 'number(properties["algorithm value"])',
+                'where': 'properties["algorithm version"] == "%s"' % version,
+                'limit': 1000
+            }
+            params['sig'] = self.hash_args(params)
+            url = '/'.join([ENDPOINT, str(VERSION)]) + '/segmentation/sum?' + self.unicode_urlencode(params)
+            r = requests.get(url)
+            algRec, created = AlgorithmRecord.objects.get_or_create(date=YESTERDAY, version=version)
+            algRec.record = record
+            if YESTERDAY in r.json()['results']:
+                algRec.value = r.json()['results'][YESTERDAY]
+            algRec.save()
+        return True
+
+    def get_algorithm_versions(self):
+        EVENT = 'Score Challenge Score Reported'
+        NAME = 'algorithm version'
+        params = {
+            'api_key': API_KEY,
+            'expire': EXPIRE,
+            'event': EVENT,
+            'name': NAME,
+            'limit': 10
+        }
+        params['sig'] = self.hash_args(params)
+        url = '/'.join([ENDPOINT, str(VERSION)]) + '/events/properties/values?' + self.unicode_urlencode(params)
+        r = requests.get(url)
+        return r.json()
 
     def unicode_urlencode(self, params):
         """ Convert lists to JSON encoded strings, and correctly handle any

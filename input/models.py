@@ -18,3 +18,10 @@ class Record(models.Model):
 
     def __unicode__(self):
         return '%s' % self.date
+
+
+class AlgorithmRecord(models.Model):
+    date = models.DateField()
+    version = models.CharField(max_length=10)
+    value = models.CharField(max_length=10, default='0')
+    record = models.ForeignKey(Record, null=True, blank=True)

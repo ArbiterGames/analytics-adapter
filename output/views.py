@@ -1,10 +1,13 @@
 import json
 import datetime
+import random
+
 from decimal import Decimal
 
 from django.http import HttpResponse
 
 from input.models import Record
+from input.models import AlgorithmRecord
 from adapter.utils import Logger
 logger = Logger()
 
@@ -72,6 +75,32 @@ def geckoboard_pool_impact(request):
 
 
 def geckoboard_algorithm_arpu(request):
+    days = []
+    chart_data = []
+    alg_values = {}
+    for day in xrange(1, 30):
+        date = (TODAY - datetime.timedelta(days=day)).strftime('%Y-%m-%d')
+        days.append(date)
+        alg_records = AlgorithmRecord.objects.filter(date=date)
+        if alg_records.exists():
+            for alg in alg_records.iterator():
+                if alg.version in alg_values:
+                    alg_values[alg.version].append(alg.value)
+                else:
+                    alg_values[alg.version] = [0] * (day - 1)
+                    alg_values[alg.version].append(alg.value)
+        else:
+            for version in alg_values:
+                alg_values[version].append(0)
+    days.reverse()
+    for version in alg_values:
+        alg_values[version].reverse()
+        chart_data.append({
+            'color': create_random_hex_color(),
+            'name': version,
+            'data': alg_values[version]
+        })
+
     response = {
         "chart": {
             "style": {
@@ -89,17 +118,17 @@ def geckoboard_algorithm_arpu(request):
             "style": {
                 "color": "#b9bbbb"
             },
-            "text": "Monthly Average Temperature"
+            "text": "Cash Challenge Algorithm"
         },
         "xAxis": {
-            "categories": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            "categories": days
         },
         "yAxis": {
             "title": {
                 "style": {
                     "color": "#b9bbbb"
                 },
-                "text": "Temperature"
+                "text": "ARPU / DAU in USD"
             }
         },
         "legend": {
@@ -111,19 +140,7 @@ def geckoboard_algorithm_arpu(request):
             "verticalAlign": "middle",
             "borderWidth": 0
         },
-        "series": [{
-                "color": "#108ec5",
-                "name": "NewYork",
-                "data": [17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5]
-            }, {
-                "color": "#52b238",
-                "name": "Berlin",
-                "data": [13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0]
-            }, {
-                "color": "#ee5728",
-                "name": "London",
-                "data": [11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
-        }]
+        "series": chart_data
     }
     return HttpResponse(json.dumps(response), content_type="application/json")
 
@@ -170,3 +187,8 @@ def calculate_mean_arpu_from_qs(qs=None):
     except Exception as err:
         logger.debug('calculate_mean_arpu_from_qs error: %s' % err)
         return Decimal('0')
+
+
+def create_random_hex_color():
+    r = lambda: random.randint(0, 255)
+    return '#%02X%02X%02X' % (r(), r(), r())
