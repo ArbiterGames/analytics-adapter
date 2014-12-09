@@ -85,10 +85,10 @@ def geckoboard_algorithm_arpu(request):
         if alg_records.exists():
             for alg in alg_records.iterator():
                 if alg.version in alg_values:
-                    alg_values[alg.version].append(alg.value)
+                    alg_values[alg.version].append(float(alg.value))
                 else:
                     alg_values[alg.version] = [0] * (day - 1)
-                    alg_values[alg.version].append(alg.value)
+                    alg_values[alg.version].append(float(alg.value))
         else:
             for version in alg_values:
                 alg_values[version].append(0)
