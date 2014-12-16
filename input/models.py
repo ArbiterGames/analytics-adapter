@@ -25,3 +25,6 @@ class AlgorithmRecord(models.Model):
     version = models.CharField(max_length=10)
     value = models.CharField(max_length=10, default='0')
     record = models.ForeignKey(Record, null=True, blank=True)
+
+    def __unicode__(self):
+        return '%s' % self.date

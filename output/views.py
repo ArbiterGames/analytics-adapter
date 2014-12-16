@@ -13,10 +13,12 @@ logger = Logger()
 
 DAYS_IN_A_WEEK = 7
 TODAY = datetime.datetime.today()
+YESTERDAY = (TODAY - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 BEGINNING_OF_LAST_WEEK = (TODAY - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
 END_OF_LAST_WEEK = (TODAY - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 BEGINNING_OF_WEEK_BEFORE_LAST = (TODAY - datetime.timedelta(days=14)).strftime('%Y-%m-%d')
 END_OF_WEEK_BEFORE_LAST = (TODAY - datetime.timedelta(days=18)).strftime('%Y-%m-%d')
+THIRTY_DAYS_AGO = (TODAY - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
 
 
 def geckoboard_dau(request):
@@ -75,27 +77,32 @@ def geckoboard_pool_impact(request):
 
 
 def geckoboard_algorithm_arpu(request):
-    days = []
+    short_days = []
+    long_days = []
     chart_data = []
     alg_values = {}
-    for day in xrange(1, 30):
-        date = (TODAY - datetime.timedelta(days=day)).strftime('%Y-%m-%d')
-        short_date = (TODAY - datetime.timedelta(days=day)).strftime('%d')
-        days.append(short_date)
-        alg_records = AlgorithmRecord.objects.filter(date=date)
-        if alg_records.exists():
-            for alg in alg_records.iterator():
-                if alg.version in alg_values:
-                    alg_values[alg.version].append(float(alg.value))
-                else:
-                    alg_values[alg.version] = [0] * (day - 1)
-                    alg_values[alg.version].append(float(alg.value))
-        else:
-            for version in alg_values:
-                alg_values[version].append(0)
-    days.reverse()
+
+    records_for_past_month = AlgorithmRecord.objects.filter(date__range=(THIRTY_DAYS_AGO, YESTERDAY))
+    days_ago = 1
+    for record in records_for_past_month:
+        alg_values[record.version] = []
+        short_days.append((TODAY - datetime.timedelta(days=days_ago)).strftime('%d'))
+        long_days.append((TODAY - datetime.timedelta(days=days_ago)).strftime('%Y-%m-%d'))
+        days_ago += 1
+
+    short_days.reverse()
+
+    for date in long_days:
+        logger.debug('get alg values for date: %s' % date)
+        for version in alg_values:
+            try:
+                value = int(records_for_past_month.get(version=version, date=date).value)
+            except:
+                value = 0
+            logger.debug('%s value: %s' % (version, value))
+            alg_values[version].insert(0, value)
+
     for version in alg_values:
-        alg_values[version].reverse()
         chart_data.append({
             'color': create_random_hex_color(),
             'name': version,
@@ -122,7 +129,7 @@ def geckoboard_algorithm_arpu(request):
             "text": "Cash Challenge Algorithm"
         },
         "xAxis": {
-            "categories": days
+            "categories": short_days
         },
         "yAxis": {
             "title": {
