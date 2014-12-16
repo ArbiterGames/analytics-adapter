@@ -80,7 +80,7 @@ def geckoboard_algorithm_arpu(request):
     alg_values = {}
     for day in xrange(1, 30):
         date = (TODAY - datetime.timedelta(days=day)).strftime('%Y-%m-%d')
-        short_date = (TODAY - datetime.timedelta(days=day)).strftime('%m/%d')
+        short_date = (TODAY - datetime.timedelta(days=day)).strftime('%d')
         days.append(short_date)
         alg_records = AlgorithmRecord.objects.filter(date=date)
         if alg_records.exists():
