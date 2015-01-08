@@ -81,7 +81,6 @@ def geckoboard_algorithm_arpu(request):
     long_days = []
     chart_data = []
     alg_values = {}
-
     records_for_past_month = AlgorithmRecord.objects.filter(date__range=(THIRTY_DAYS_AGO, YESTERDAY))
     days_ago = 1
     for record in records_for_past_month:
@@ -93,13 +92,12 @@ def geckoboard_algorithm_arpu(request):
     short_days.reverse()
 
     for date in long_days:
-        logger.debug('get alg values for date: %s' % date)
         for version in alg_values:
             try:
-                value = int(records_for_past_month.get(version=version, date=date).value)
+                alg_rec = records_for_past_month.get(version=version, date=date)
+                value = float('{0:.2f}'.format(Decimal(alg_rec.value) / Decimal(alg_rec.record.dau)))
             except:
-                value = 0
-            logger.debug('%s value: %s' % (version, value))
+                value = float(0.0)
             alg_values[version].insert(0, value)
 
     for version in alg_values:
