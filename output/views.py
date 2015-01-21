@@ -21,12 +21,16 @@ END_OF_WEEK_BEFORE_LAST = (TODAY - datetime.timedelta(days=18)).strftime('%Y-%m-
 THIRTY_DAYS_AGO = (TODAY - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
 
 
-def yesterdays_dau(request):
+def yesterday(request):
     """ Returns yesterdays metrics that we pull for the daily summary email updates
         regarding overall health of the arbiter server
     """
     record = Record.objects.get(date=YESTERDAY)
-    return HttpResponse(json.dumps(record.dau), content_type="application/json")
+    response = {
+        'dau': record.dau,
+        'arpu': record.arpu
+    }
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 def geckoboard_dau(request):
