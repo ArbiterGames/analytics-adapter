@@ -25,7 +25,7 @@ def yesterday(request):
     """ Returns yesterdays metrics that we pull for the daily summary email updates
         regarding overall health of the arbiter server
     """
-    record = Record.objects.get(date=YESTERDAY)
+    record = Record.objects.all().latest('date')
     response = {
         'dau': record.dau,
         'arpu': record.arpu
